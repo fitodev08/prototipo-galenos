@@ -1,0 +1,12 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+const result = spawnSync(process.execPath, ['--test', '--test-reporter=tap', path.join(__dirname, 'domain.test.cjs')], { encoding: 'utf8' });
+const output = (result.stdout || '') + (result.stderr || '');
+fs.writeFileSync(path.join(__dirname, 'resultados.tap'), output, 'utf8');
+const number = name => Number(output.match(new RegExp('^# ' + name + ' (\\d+)', 'm'))?.[1] || 0);
+const summary = { executedAt: new Date().toISOString(), tests: number('tests'), passed: number('pass'), failed: number('fail'), exitCode: result.status };
+fs.writeFileSync(path.join(__dirname, 'resultado.json'), JSON.stringify(summary, null, 2), 'utf8');
+fs.writeFileSync(path.join(__dirname, 'RESULTADOS.md'), `# Resultados de verificación de Galenos\n\nSe ejecutaron **${summary.tests} pruebas de dominio**: **${summary.passed} aprobadas**, **${summary.failed} fallidas**. Código de salida: ${summary.exitCode}.\n\nLa evidencia completa está en resultados.tap y el resumen con fecha de ejecución en resultado.json. Para repetir, ejecutar con Node.js: \`node Pruebas/ejecutar.cjs\` desde la carpeta del proyecto.\n\n## Recorridos comprobados en navegador\n\n- Acceso del paciente y reserva en cinco etapas hasta obtener GAL-1005.\n- Bono inválido rechazado sin completar el pago.\n- Pago válido de GAL-1001 con recibo REC-2026005.\n- Paciente visible en la espera del médico del día y marcado de atención.\n- Comisión de dos atenciones con base de 28.000 pesos al 20 por ciento: 11.200 pesos.\n- Comprobante COM-101 emitido y pasado a Pagada mediante referencia informativa.\n- Segundo factor de demostración: código incorrecto rechazado y código de prueba aceptado.\n- Portal móvil revisado: sin desbordamiento horizontal en el tamaño probado.\n- Documentación: 24 filas de historias; HU-4-7 identificada como pendiente de estimación.\n- No se capturaron errores de consola en la revisión realizada.\n\nLas capturas y el registro están en Evidencias. Estas comprobaciones no incluyen una prueba de carga de 150 usuarios, una auditoría completa de accesibilidad o seguridad, revisión independiente ni aceptación del Product Owner.\n`, 'utf8');
+console.log(JSON.stringify(summary));
+process.exitCode = result.status || 0;

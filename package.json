@@ -1,0 +1,10 @@
+{
+  "name": "prototipo-centro-medico-galenos",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Prototipo local SGMG basado en el Informe N2",
+  "scripts": {
+    "start": "node herramientas/servidor.cjs",
+    "test": "node --test Pruebas/domain.test.cjs"
+  }
+}
